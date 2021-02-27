@@ -1,50 +1,50 @@
 <script>
-	// import { lodash } from 'svelte'
+	import _ from 'lodash'
+
+	export let name;
+
+	let disabled = false;
+
+	let selectedCategory;
+	let selectedDifficulty;
+	let answer;
+	let feedback = ''
+	let correct = 0
+	let incorrect = 0
 	
-		export let name;
+	let difficultys = [
+		{ id: 1, text: `easy` },
+		{ id: 2, text: `medium` },
+		{ id: 3, text: `hard` }
+	];
 	
-		let disabled = false;
-	
-		let selectedCategory;
-		let selectedDifficulty;
-		let answer;
-		let feedback = ''
-		let correct = 0
-		let incorrect = 0
-	
-		let difficultys = [
-			{ id: 1, text: `easy` },
-			{ id: 2, text: `medium` },
-			{ id: 3, text: `hard` }
-		];
-	
-		let categorys = [
-			{
-			  id: 1,
-			  text: `General Knowledge`,
-			  value: `9`,
-			},
-			{
-			id: 2, 
-			text: `Books`,
-			value: `10`
-			},
-			{
-			id: 3, 
-			text: `Film`,
-			value: `11`
-			},
-			{
-			id: 4, 
-			text: `Music`,
-			value: `12`
-			},
-			{
-			id: 5, 
-			text: `Television`,
-			value: `14`
-			},
-		];
+	let categorys = [
+		{
+			id: 1,
+			text: `General Knowledge`,
+			value: `9`,
+		},
+		{
+		id: 2, 
+		text: `Books`,
+		value: `10`
+		},
+		{
+		id: 3, 
+		text: `Film`,
+		value: `11`
+		},
+		{
+		id: 4, 
+		text: `Music`,
+		value: `12`
+		},
+		{
+		id: 5, 
+		text: `Television`,
+		value: `14`
+		},
+	];
 	
 		let questions = []
 		
@@ -60,7 +60,8 @@
 	
 			questions = questions.map((apiQuestion) => {
 				const question = {
-					question: apiQuestion.question.replace(/&#039;/g, " ").replace(/&quot;/g, `"`).replace(/&rsquo;/g, `'`).replace(/&amp;/g, '&'), // results in each individual question object
+					// question: apiQuestion.question.replace(/&#039;/g, " ").replace(/&quot;/g, `"`).replace(/&rsquo;/g, `'`).replace(/&amp;/g, '&'),
+					question: apiQuestion.question,
 					correct_answer: apiQuestion.correct_answer,
 					has_answered: false
 				}
@@ -82,27 +83,27 @@
 			console.log(questions)
 		}
 	
-		function handleSubmit() {
-			disabled = false;
-			console.log(`category: ${selectedCategory.value}`)
-			console.log(`difficulty: ${selectedDifficulty.text}`)
-			APIURL = `https://opentdb.com/api.php?amount=1&category=${selectedCategory.value}&difficulty=${selectedDifficulty.text}&type=multiple`
-			getQuestions(APIURL)
-	  }
+	function handleSubmit() {
+		disabled = false;
+		console.log(`category: ${selectedCategory.value}`)
+		console.log(`difficulty: ${selectedDifficulty.text}`)
+		APIURL = `https://opentdb.com/api.php?amount=1&category=${selectedCategory.value}&difficulty=${selectedDifficulty.text}&type=multiple`
+		getQuestions(APIURL)
+	}
 	
-	  function checkAnswer(choice, correctAnswer, answered) {
+	function checkAnswer(choice, correctAnswer, answered) {
 		disabled = true;
-	
+
 		if (choice === correctAnswer) {
-				console.log(correctAnswer)
-				feedback = 'you got it!'
-				correct ++
-			} else {
-				console.log(choice)
-				feedback = 'WRONG!'
-				incorrect ++
-			}
+			console.log(correctAnswer)
+			feedback = 'you got it!'
+			correct ++
+		} else {
+			console.log(choice)
+			feedback = 'WRONG!'
+			incorrect ++
 		}
+	}
 	
 	
 	</script>
@@ -140,11 +141,11 @@
 		<div>
 			{#each questions as question}
 			<div class="question_card">
-				<h3 class="question"> {question.question}</h3>
-				<button disabled={disabled} on:click={checkAnswer(question.choice_1, question.correct_answer, question.has_answered)}> {question.choice_1}</button>
-				<button disabled={disabled} on:click={checkAnswer(question.choice_2, question.correct_answer, question.has_answered)}> {question.choice_2}</button>
-				<button disabled={disabled} on:click={checkAnswer(question.choice_3, question.correct_answer, question.has_answered)}> {question.choice_3}</button>
-				<button disabled={disabled} on:click={checkAnswer(question.choice_4, question.correct_answer, question.has_answered)}> {question.choice_4}</button>
+				<h3 class="question"> {@html _.unescape(question.question)}	</h3>
+				<button disabled={disabled} on:click={checkAnswer(question.choice_1, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_1)}</button>
+				<button disabled={disabled} on:click={checkAnswer(question.choice_2, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_2)}</button>
+				<button disabled={disabled} on:click={checkAnswer(question.choice_3, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_3)}</button>
+				<button disabled={disabled} on:click={checkAnswer(question.choice_4, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_4)}</button>
 				<p>{ question.answer }</p>
 				<p>{ feedback }</p>
 			</div>

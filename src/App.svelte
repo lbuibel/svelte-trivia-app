@@ -8,9 +8,11 @@
 	let selectedCategory;
 	let selectedDifficulty;
 	let answer;
-	let feedback = ''
 	let correct = 0
 	let incorrect = 0
+	let APIURL = ''
+
+	let questions = []
 	
 	let difficultys = [
 		{ id: 1, text: `easy` },
@@ -46,61 +48,50 @@
 		},
 	];
 	
-		let questions = []
-		
-		let APIURL = ''
 	
-		async function getQuestions(url) {
-			const response = await fetch(url)
-			let data = await response.json()
-	
-			questions = data.results
-	
-			let questionResults = []
-	
-			questions = questions.map((apiQuestion) => {
-				const question = {
-					// question: apiQuestion.question.replace(/&#039;/g, " ").replace(/&quot;/g, `"`).replace(/&rsquo;/g, `'`).replace(/&amp;/g, '&'),
-					question: apiQuestion.question,
-					correct_answer: apiQuestion.correct_answer,
-					has_answered: false
-				}
-	
-				const answers = [...apiQuestion.incorrect_answers];
-	
-				question.answer = Math.floor(Math.random() * 3) + 1;
-	
-				answers.splice( question.answer - 1, 0, apiQuestion.correct_answer);
-	
-				answers.forEach((choice, i) => {
-					question['choice_' + (i + 1)] = choice;
-				})
-					questionResults.push(question)
-				}
-				// end of map
-			)
-			questions = questionResults
-			console.log(questions)
-		}
+	async function getQuestions(url) {
+		const response = await fetch(url)
+		let data = await response.json()
+
+		questions = data.results
+
+		let questionResults = []
+
+		questions = questions.map((apiQuestion) => {
+			const question = {
+				question: apiQuestion.question,
+				correct_answer: apiQuestion.correct_answer,
+				has_answered: false
+			}
+
+			const answers = [...apiQuestion.incorrect_answers];
+
+			question.answer = Math.floor(Math.random() * 3) + 1;
+
+			answers.splice( question.answer - 1, 0, apiQuestion.correct_answer);
+
+			answers.forEach((choice, i) => {
+				question['choice_' + (i + 1)] = choice;
+			})
+				questionResults.push(question)
+			}
+			// end of map
+		)
+		questions = questionResults
+	}
 	
 	function handleSubmit() {
 		disabled = false;
-		console.log(`category: ${selectedCategory.value}`)
-		console.log(`difficulty: ${selectedDifficulty.text}`)
 		APIURL = `https://opentdb.com/api.php?amount=1&category=${selectedCategory.value}&difficulty=${selectedDifficulty.text}&type=multiple`
 		getQuestions(APIURL)
 	}
-	
+
+
 	function checkAnswer(choice, correctAnswer, answered) {
 		disabled = true;
-
 		if (choice === correctAnswer) {
-			console.log(correctAnswer)
-			feedback = 'you got it!'
 			correct ++
 		} else {
-			console.log(choice)
-			feedback = 'WRONG!'
 			incorrect ++
 		}
 	}
@@ -109,9 +100,9 @@
 	</script>
 	
 	<main>
-		<h1>Hello {name}!</h1>
+		<h1>{name}!</h1>
 	
-		<form on:submit|preventDefault={handleSubmit}>
+		<form on:submit|preventDefault={handleSubmit} class="game-settings">
 			<select bind:value={selectedCategory} on:blur="{() => answer = ''}">
 				{#each categorys as category}
 					<option value={category}>
@@ -128,15 +119,14 @@
 				{/each}
 			</select>
 		
-		
-			<button type=submit>
-				Submit
-			</button>
+			<button type=submit>Start</button>
 	
 		</form>
 	
-		<p>correct: { correct }</p>
-		<p>incorrect: { incorrect }</p>
+		<div class="results">
+			<p>Correct: { correct }</p>
+			<p>Incorrect: { incorrect }</p>
+		</div>
 	
 		<div>
 			{#each questions as question}
@@ -146,15 +136,14 @@
 				<button disabled={disabled} on:click={checkAnswer(question.choice_2, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_2)}</button>
 				<button disabled={disabled} on:click={checkAnswer(question.choice_3, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_3)}</button>
 				<button disabled={disabled} on:click={checkAnswer(question.choice_4, question.correct_answer, question.has_answered)}> {@html _.unescape(question.choice_4)}</button>
-				<p>{ question.answer }</p>
-				<p>{ feedback }</p>
+				<!-- <p>{ question.answer }</p>
+				<p>{ feedback }</p> -->
 			</div>
 	
 			<form on:submit|preventDefault={handleSubmit}>			
-				<button type=submit>
-						Submit
-					</button>
+				<button class="submit" type=submit>Next</button>
 			</form>
+
 			{:else}
 				<!-- this block renders when photos.length === 0 -->
 				<p>Shall we play a game?</p>
@@ -165,12 +154,44 @@
 	
 	<style>
 		main {
-			text-align: center;
-			padding: 1em;
-			max-width: 240px;
+			width: 450px;
 			margin: 0 auto;
+			padding: 1em;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
 		}
-	
+
+		.game-settings {
+			width: 100%;
+		}
+
+		.game-settings select{
+			width: 46%;
+			margin: .25rem;
+			padding: .75rem;
+			border-radius: 5px;
+			color: rgb(48, 48, 48);
+			font-size: 14px;
+		}
+
+		.game-settings button{
+			width: 95%;
+			margin: .5rem;
+			padding: .75rem;
+			text-transform: uppercase;
+		}
+
+		.results {
+			display: flex;
+			justify-content: center;
+		}
+
+		.results p {
+			margin: 1rem;
+		}
+
 		h1 {
 			color: #ff3e00;
 			text-transform: uppercase;
@@ -178,15 +199,28 @@
 			font-weight: 100;
 		}
 	
-		@media (min-width: 640px) {
+		/* @media (min-width: 640px) {
 			main {
-				max-width: none;
+				border: solid orange;
 			}
-		}
-/* 	
-		.question_card {
-			border: solid red;
 		} */
+	
+		.question_card {
+			width: 100%;
+			margin-bottom: 2rem;
+			margin-top: 1rem;
+		}
+
+		.question_card h3 {
+			font-weight: 600;
+		}
+
+		.submit {
+			color: white;
+			background-color:#ff3e00;
+			width: 33%;
+			border-radius: 20px;
+		}
 	
 		button {
 			margin: 5px auto;
@@ -196,7 +230,7 @@
 			border-radius: 5px;
 			border: none;
 			box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-			  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+			transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 		}
 	
 		button:hover {
